@@ -32,15 +32,23 @@ const userRoute = (app) => {
             }
         })
         .put(async (req, res) => {
-            const { id } = req.params
+            //const { id, firstName, lastName, email } = req.params
 
             if (!id) {
                 return res.status(400).send({ error: 'User ID is missing.' })
             }
 
             try {
-                const updatedUser = await UserModel.findOneAndUpdate({ _id: id }, req.body, {
-                    new: true,
+
+                const { id, firstName, lastName, email } = req.body
+
+                const updatedUser = await UserModel.findOneAndUpdate(req.params.users, {
+                    id,
+                    firstName,
+                    lastName,
+                    email
+                },
+                    {new: true,
                 });
 
                 console.log(updatedUser)
@@ -48,6 +56,8 @@ const userRoute = (app) => {
                 if (updatedUser) {
                     return res.status(200).send('OK')
                 }
+
+                await updatedUser.save();
 
 
                 res.status(400).send({ error: 'Could not update the user' })
@@ -59,14 +69,16 @@ const userRoute = (app) => {
         })
         .delete(async (req, res) => {
 
-            const { id } = req.params
+            //const { id } = req.params
 
             if (!id) {
                 return res.status(400).send({ error: 'User ID is missing.' })
             }
 
             try {
-                const deletedUser = await UserModel.deleteOne({ _id: id })
+
+                const { id } = req.body
+                const deletedUser = await UserModel.findByIdAndRemove(req.params.user);
 
                 if (deletedUser.deletedCount) {
                     return res.send('OK')
